@@ -1,68 +1,32 @@
 import express from "express"
-import { ProductMongoManager } from "../dao/managerDB/ProductMongoManager.js"
-import { CartMongoManager } from "../dao/managerDB/CartMongoManager.js"
-import { checkAuth, checkExistingUser } from "../middleware/auth.js";
+import { checkAuth, checkExistingUser, authorization } from "../middleware/auth.js";
+import { getViewDefault, getViewLogin, getViewProducts, getViewRegister,getViewProductById, getViewCartById, getViewFailLogin, getViewFailRegister, getViewUserCreate, getViewRealTime, getViewChat } from "../controllers/views.controller.js";
+import { getCurrent } from "../controllers/session.controller.js";
 
 const viewRoutes = express.Router()
-const productManager=new ProductMongoManager()
-const cartManager=new CartMongoManager()
 
-viewRoutes.get("/", checkAuth, async (req, res) => {
-  const resultado = await productManager.getProducts()
+viewRoutes.get("/", checkAuth, getViewDefault)
 
-  if (resultado.message==="OK")
-    res.render("home", { title: "Home", data: resultado.rdo.payload })
-})
+viewRoutes.get("/login",checkExistingUser,getViewLogin)
 
-viewRoutes.get("/login",checkExistingUser,(req,res)=>{
-  res.render('login')
-})
+viewRoutes.get("/register",checkExistingUser,getViewRegister)
 
-viewRoutes.get("/register",checkExistingUser,(req,res)=>{
-  res.render('register')
-})
+viewRoutes.get("/products", checkAuth, getViewProducts)
 
-viewRoutes.get("/products", checkAuth, async (req, res) => {
-  const {page, limit} = req.query
-  const {user} = req.session
+viewRoutes.get("/product", checkAuth, getViewProductById)
 
-  const resultado = await productManager.getProducts(limit,page)
+viewRoutes.get("/carts/:cId", checkAuth,getViewCartById)
 
-  if (resultado.message==="OK")
-    res.render("products", { title: "Products", data: resultado.rdo, user: user })
-})
+viewRoutes.get("/current", getCurrent)
 
-viewRoutes.get("/product", checkAuth, async (req, res) => {
-  const {pId} = req.query
+viewRoutes.get("/faillogin",getViewFailLogin)
 
-  const resultado = await productManager.getProductById(pId)
+viewRoutes.get("/failregister",getViewFailRegister)
 
-  if (resultado.message==="OK")
-    res.render("product", { title: "View Product", data: resultado.rdo })
-})
+viewRoutes.get("/usercreatesuccess",getViewUserCreate)
 
-viewRoutes.get("/carts/:cId", checkAuth, async (req, res) => {
-  const {cId} = req.params
-  const resultado = await cartManager.getProductsCartById(cId)
-  res.render("cartDetails", { title: "Details Cart", data: resultado.rdo })
-})
+viewRoutes.get("/realtimeproducts", getViewRealTime)
 
-viewRoutes.get("/faillogin",checkExistingUser,(req,res)=>{
-  res.render('faillogin')
-})
-
-viewRoutes.get("/failregister",checkExistingUser,(req,res)=>{
-  res.render('failregister')
-})
-
-viewRoutes.get("/realtimeproducts", async (req, res) => {
-  const resultado = await productManager.getProducts();
-  if (resultado.message==="OK")
-    res.render("realtimeproducts", { title: "RealTime Products", data: resultado.rdo.payload })
-})
-
-viewRoutes.get('/chat', async (req, res)=>{
-  res.render('chat')
-})
+viewRoutes.get('/chat', checkAuth, authorization('Usuario'), getViewChat)
 
 export default viewRoutes

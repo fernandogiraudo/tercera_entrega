@@ -43,6 +43,7 @@ export class CartMongoManager {
     try
     {
       const cart=await CartModel.findOne({_id: id}).populate('products.product').lean()
+
       if (cart) 
         return {message: "OK" , rdo: cart.products}
       else 
