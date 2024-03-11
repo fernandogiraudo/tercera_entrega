@@ -1,6 +1,7 @@
 import {Router, request} from 'express'
 import { userModel } from '../dao/models/user.model.js'
 import passport from 'passport'
+import { getCurrentUser } from '../dao/controllers/session.controller.js'
 
 const sessionRoutes = Router()
 
@@ -51,4 +52,5 @@ sessionRoutes.get('/githubcallback',
     res.redirect('/products')
   })
 
+  sessionRoutes.get('/current', getCurrentUser);
 export default sessionRoutes;
